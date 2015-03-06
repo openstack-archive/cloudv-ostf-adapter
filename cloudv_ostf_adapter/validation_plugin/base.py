@@ -15,10 +15,13 @@
 import os
 import sys
 
+from oslo_config import cfg
 from oslo_utils import importutils
 
 from cloudv_ostf_adapter.common import utils
 from cloudv_ostf_adapter.nose_plugin import discovery
+from cloudv_ostf_adapter.storage import engine
+from cloudv_ostf_adapter.storage import models
 
 
 class SuiteDescriptor(object):
@@ -91,7 +94,7 @@ class ValidationPlugin(object):
                 })
         return test_suites_paths
 
-    def _get_tests_by_suite(self, suite):
+    def get_tests_by_suite(self, suite):
         tests = []
         for test in self.tests:
             if suite in test:
@@ -117,11 +120,20 @@ class ValidationPlugin(object):
         """
         raise Exception("Plugin doesn't support suites execution.")
 
-    def run_suite(self, suite):
+    def _run_suite(self, suite):
         """
         Runs specific suite
         """
         raise Exception("Plugin doesn't support suite execution.")
+
+    def run_suite(self, suite, db_test=None):
+        result = self._run_suite(suite)
+        if db_test is not None:
+            self.store_result_to_db(db_test, result)
+
+    def store_result_to_db(self, db_test, result):
+        with engine.contexted_session(cfg.CONF.rest.dbpath) as session:
+            models.Task.update_status(session, db_test, result, 'finished')
 
     def run_test(self, test):
         """
