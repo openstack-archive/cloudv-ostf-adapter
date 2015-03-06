@@ -64,7 +64,9 @@ class OSTF(object):
             _plugin = plugin(load_tests=False)
             descriptor = _plugin.descriptor()
             if descriptor['name'] == validation_plugin_name:
-                plugin().run_suites()
+                reports = plugin().run_suites()
+                for report in reports:
+                    utils.print_dict(report)
 
     @cmd.args("--suite", dest="suite")
     @cmd.args("--validation-plugin-name", dest="validation_plugin_name")
@@ -73,7 +75,9 @@ class OSTF(object):
             _plugin = plugin(load_tests=False)
             descriptor = _plugin.descriptor()
             if descriptor['name'] == validation_plugin_name:
-                plugin().run_suite(suite)
+                reports = plugin().run_suite(suite)
+                for report in reports:
+                    utils.print_dict(report)
 
     @cmd.args("--validation-plugin-name", dest="validation_plugin_name")
     @cmd.args("--test", dest="test")
