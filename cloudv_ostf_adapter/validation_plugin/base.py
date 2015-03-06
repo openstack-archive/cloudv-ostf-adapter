@@ -17,8 +17,11 @@ import sys
 
 from oslo_utils import importutils
 
+from cloudv_ostf_adapter.common import cfg
 from cloudv_ostf_adapter.common import utils
 from cloudv_ostf_adapter.nose_plugin import discovery
+
+CONF = cfg.CONF
 
 
 class SuiteDescriptor(object):
@@ -128,3 +131,21 @@ class ValidationPlugin(object):
         Runs specific test
         """
         raise Exception("Plugin doesn't support test execution.")
+
+    def run_suite_within_cli(self, suite):
+        """
+        Runs test suite with view for CLI
+        """
+        raise Exception("CLI execution is not supported.")
+
+    def run_suites_within_cli(self):
+        """
+        Runs test suites with view for CLI
+        """
+        raise Exception("CLI execution is not supported.")
+
+    def run_test_within_cli(self, test):
+        """
+        Runs test suites with view for CLI
+        """
+        raise Exception("CLI execution is not supported.")
