@@ -13,12 +13,16 @@
 #    under the License.
 
 import os
+import sys
+
+from StringIO import StringIO
 
 from nose import core
-
 from oslo_utils import importutils
 
 from cloudv_ostf_adapter.common import cfg
+from cloudv_ostf_adapter.common import utils
+# from cloudv_ostf_adapter.common import object_descriptors
 from cloudv_ostf_adapter.validation_plugin import base
 from cloudv_ostf_adapter.validation_plugin.fuel_health import sanity
 from cloudv_ostf_adapter.validation_plugin.fuel_health import smoke
@@ -78,25 +82,68 @@ class FuelHealthPlugin(base.ValidationPlugin):
         except Exception:
             print("fuel_health is not installed.")
 
+    def _execute_and_report(self, test_suite_paths):
+        reports = []
+        for test in test_suite_paths:
+            suites_report = StringIO()
+            sys.stderr = suites_report
+            result = core.TestProgram(
+                argv=["--tests", test, CONF.nose_verbosity],
+                exit=False).success
+            reports.append({
+                "test": self.tests[test_suite_paths.index(test)],
+                "status": "Passed" if result else "Failed",
+                "report": "".join(suites_report.buflist)
+            })
+        return reports
+
     def run_suites(self):
+        safe_stderr = sys.stderr
         test_suites_paths = self.setup_execution(self.tests)
-        print(core.TestProgram(
-            argv=test_suites_paths).success)
+        reports = self._execute_and_report(test_suites_paths)
+        sys.stderr = safe_stderr
+        return reports
 
     def setup_execution(self, tests):
         test_suites_paths = self._collect_test(tests)
-        test_suites_paths.append(CONF.nose_verbosity)
         os.environ.update(
             {"CUSTOM_FUEL_CONFIG": CONF.health_check_config_path})
-        CONF.reload_config_files()
         return test_suites_paths
 
     def run_suite(self, suite):
+        safe_stderr = sys.stderr
         if ":" in suite:
             raise Exception(
                 "%s is a test case, but not test suite." % suite)
         else:
             tests = self._get_tests_by_suite(suite)
-            print("Running test suite: %s ..." % suite)
-            print(core.TestProgram(
-                argv=self.setup_execution(tests)).success)
+            test_suites_paths = self.setup_execution(tests)
+            reports = self._execute_and_report(test_suites_paths)
+        sys.stderr = safe_stderr
+        return reports
+
+    def run_suites_within_cli(self):
+        reports = self.run_suites()
+        for report in reports:
+            utils.print_dict(report)
+
+    def run_suite_within_cli(self, suite):
+        reports = self.run_suite(suite)
+        for report in reports:
+            utils.print_dict(report)
+
+    def run_test(self, test):
+        safe_stderr = sys.stderr
+        if ":" not in test:
+            raise Exception(
+                "%s is a test suite, but not test case." % test)
+        else:
+            test_suites_paths = self.setup_execution([test])
+            reports = self._execute_and_report(test_suites_paths)
+        sys.stderr = safe_stderr
+        return reports
+
+    def run_test_within_cli(self, test):
+        reports = self.run_test(test)
+        for report in reports:
+            utils.print_dict(report)
