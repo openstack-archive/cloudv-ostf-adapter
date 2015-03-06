@@ -91,12 +91,14 @@ class FuelHealthPlugin(base.ValidationPlugin):
         CONF.reload_config_files()
         return test_suites_paths
 
-    def run_suite(self, suite):
+    def _run_suite(self, suite):
         if ":" in suite:
             raise Exception(
                 "%s is a test case, but not test suite." % suite)
         else:
-            tests = self._get_tests_by_suite(suite)
+            tests = self.get_tests_by_suite(suite)
             print("Running test suite: %s ..." % suite)
-            print(core.TestProgram(
-                argv=self.setup_execution(tests)).success)
+            result = core.TestProgram(
+                argv=self.setup_execution(tests), exit=False)
+            print(result.success)
+        return result
