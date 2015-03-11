@@ -60,10 +60,10 @@ class ValidationPlugin(object):
         self.name = name
         self.suites = __suites
         self._suites = suites
-        self.tests = (self._get_tests()
+        self.tests = (self.get_tests()
                       if load_tests else [])
 
-    def _get_tests(self):
+    def get_tests(self):
         """
         Test collector
         """
@@ -94,7 +94,7 @@ class ValidationPlugin(object):
                 })
         return test_suites_paths
 
-    def _get_tests_by_suite(self, suite):
+    def get_tests_by_suite(self, suite):
         tests = []
         for test in self.tests:
             if suite in test:

@@ -23,9 +23,29 @@ CONF = cfg.CONF
 SUITES = [fake_plugin_tests]
 
 
+class FakeTest(object):
+    def __init__(self):
+        self.description = {
+            "test": 'fake_test',
+            "report": "",
+            "result": "passed",
+            "duration": "0.1"
+        }
+
+
 class FakeValidationPlugin(base.ValidationPlugin):
 
     def __init__(self, load_tests=True):
         name = 'fake'
+        self.test = FakeTest()
         super(FakeValidationPlugin, self).__init__(
             name, SUITES, load_tests=load_tests)
+
+    def run_suites(self):
+        return [self.test]
+
+    def run_suite(self, suite):
+        return [self.test]
+
+    def run_test(self, test):
+        return [self.test]

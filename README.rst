@@ -123,3 +123,49 @@ Links
 
  * OSTF contributor's guide - http://docs.mirantis.com/fuel-dev/develop/ostf_contributors_guide.html)
  * OSTF source code - https://github.com/stackforge/fuel-ostf
+
+========
+REST API
+========
+
+
+Run server
+----------
+
+.. code-block:: bash
+
+ $ cloudvalidation-server --config-file=path_to_config
+ * Running on http://127.0.0.1:8777/ (Press CTRL+C to quit)
+
+Example of config
+-----------------
+
+ [rest]
+ server_host=127.0.0.1
+ server_port=8777
+ log_file=/var/log/ostf.log
+ debug=False
+
+List of supported operations
+----------------------------
+ - get list of supported plugins
+   GET /v1/plugins?load_tests=True/False
+   In load_tests=True case tests for plugin will be shown.
+
+ - get suites in plugin
+   GET /v1/plugins/<plugin_name>/suites
+
+ - get tests for all suites in plugin
+   GET /v1/plugins/<plugin_name>/suites/tests
+
+ - get tests per suite in plugin
+   GET /v1/plugins/<plugin_name>/suites/<suite>/tests
+
+ - run suites for plugin
+   POST /v1/plugins/<plugin_name>/suites
+
+ - run suite for plugin
+   POST /v1/plugins/<plugin_name>/suites/<suite>
+
+ - run test for plugin
+   /v1/plugins/<plugin_name>/suites/tests/<test>
