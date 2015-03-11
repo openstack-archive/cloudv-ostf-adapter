@@ -30,6 +30,7 @@ sanity_group = cfg.OptGroup("sanity", "Sanity configuration group.")
 smoke_group = cfg.OptGroup("smoke", "Smoke configuration group.")
 platform_group = cfg.OptGroup("platform",
                               "Platform functional configuration group.")
+rest_group = cfg.OptGroup("rest", "Cloudvalidation ReST API service options.")
 ha_group = cfg.OptGroup("high_availability", "HA configuration group.")
 
 
@@ -61,6 +62,22 @@ ha_opts = [
     cfg.MultiStrOpt("enabled_tests", default=[]),
 ]
 
+rest_opts = [
+    cfg.StrOpt('server_host',
+               default='127.0.0.1',
+               help="adapter host"),
+    cfg.IntOpt('server_port',
+               default=8777,
+               help="Port number"),
+    cfg.StrOpt('log_file',
+               default='/var/log/ostf.log',
+               help=""),
+    cfg.StrOpt('debug',
+               default=False,
+               help="Debug for REST API."),
+]
+
+
 CONF = cfg.CONF
 CONF.register_opts(common_opts)
 
@@ -68,11 +85,13 @@ CONF.register_group(sanity_group)
 CONF.register_group(smoke_group)
 CONF.register_group(platform_group)
 CONF.register_group(ha_group)
+CONF.register_group(rest_group)
 
 CONF.register_opts(sanity_opts, sanity_group)
 CONF.register_opts(smoke_opts, smoke_group)
 CONF.register_opts(platform_opts, platform_group)
 CONF.register_opts(ha_opts, ha_group)
+CONF.register_opts(rest_opts, rest_group)
 
 
 def parse_args(argv, default_config_files=None):

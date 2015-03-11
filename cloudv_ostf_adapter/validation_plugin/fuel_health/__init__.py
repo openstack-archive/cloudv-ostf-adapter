@@ -79,9 +79,9 @@ class FuelHealthPlugin(base.ValidationPlugin):
         super(FuelHealthPlugin, self).__init__(
             'fuel_health', SUITES, load_tests=load_tests)
 
-    def _get_tests(self):
+    def get_tests(self):
         try:
-            return super(FuelHealthPlugin, self)._get_tests()
+            return super(FuelHealthPlugin, self).get_tests()
         except Exception:
             print("fuel_health is not installed.")
 
@@ -134,7 +134,7 @@ class FuelHealthPlugin(base.ValidationPlugin):
             raise Exception(
                 "%s is a test case, but not test suite." % suite)
         else:
-            tests = self._get_tests_by_suite(suite)
+            tests = self.get_tests_by_suite(suite)
             test_suites_paths = self.setup_execution(tests)
             reports = self._execute_and_report(test_suites_paths)
         sys.stderr = safe_stderr
