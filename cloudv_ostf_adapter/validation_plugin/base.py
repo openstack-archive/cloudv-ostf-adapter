@@ -94,7 +94,7 @@ class ValidationPlugin(object):
                 })
         return test_suites_paths
 
-    def _get_tests_by_suite(self, suite):
+    def get_tests_by_suite(self, suite):
         tests = []
         for test in self.tests:
             if suite in test:
