@@ -1,0 +1,8 @@
+Verified+2: Jenkins
+Code-Review+2: Svetlana Shturm <sshturm@mirantis.com>
+Workflow+1: Svetlana Shturm <sshturm@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Wed, 11 Mar 2015 05:35:57 +0000
+Reviewed-on: https://review.openstack.org/162228
+Project: stackforge/cloudv-ostf-adapter
+Branch: refs/heads/master
