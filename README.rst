@@ -45,7 +45,7 @@ Examples
 
 .. code-block:: bash
 
-  $ cloudvalidation cloud-health-check list_plugins
+  $ cloudvalidation-cli cloud-health-check list_plugins
 
 +----------+------------------------------------------------------------------+
 | Property | Value                                                            |
@@ -59,7 +59,7 @@ Examples
 
 .. code-block:: bash
 
-  $ cloudvalidation cloud-health-check list_plugin_suites --validation-plugin fuel_health
+  $ cloudvalidation-cli cloud-health-check list_plugin_suites --validation-plugin fuel_health
 
 +----------+------------------------------------------------------------------+
 | Property | Value                                                            |
@@ -72,7 +72,7 @@ Examples
 
 .. code-block:: bash
 
-  $ cloudvalidation cloud-health-check list_plugin_tests --validation-plugin fuel_health
+  $ cloudvalidation-cli cloud-health-check list_plugin_tests --validation-plugin fuel_health
 
 +----------+--------------------------------------------------------------------------------------+
 | Property | Value                                                                                |
@@ -91,7 +91,7 @@ Examples
 
 .. code-block:: bash
 
- $ cloudvalidation --config-dir=/etc/cloudv_ostf_adapter cloud-health-check run_suites --validation-plugin-name fuel_health
+ $ cloudvalidation-cli --config-dir=/etc/cloudv_ostf_adapter cloud-health-check run_suites --validation-plugin-name fuel_health
 
 
 Request user list ... ok
@@ -111,7 +111,7 @@ OK
 
 .. code-block::
 
- $ cloudvalidation --config-dir=/etc/cloudv_ostf_adapter cloud-health-check run_suite --validation-plugin-name fuel_health --suite fuel_health.tests.sanity.test_sanity_identity.SanityIdentityTest
+ $ cloudvalidation-cli --config-dir=/etc/cloudv_ostf_adapter cloud-health-check run_suite --validation-plugin-name fuel_health --suite fuel_health.tests.sanity.test_sanity_identity.SanityIdentityTest
 
 Running test suite: fuel_health.tests.sanity.test_sanity_identity.SanityIdentityTest ...
 Request user list ... ok
@@ -187,3 +187,120 @@ REST API Client usage
     plugin_one = plugins[0]['name']
 
     suites = cloudvalidation.suites.list_suites(plugin_one)
+
+=========================
+REST API Client CLI usage
+=========================
+
+To connect cloudvalidation client to ReST service you need to do next::
+
+    # create configuration file, that contains
+          [DEFAULT]
+          host = localhost
+          port = 8777
+          api_version = v1
+
+    or
+
+    # export next operating system variables:
+        export MCLOUDV_HOST=localhost
+        export MCLOUDV_PORT=8777
+        export MCLOUDV_API=v1
+
+
+Usage examples::
+.. code-block:: bash
+
+    cloudvalidation cloud-health-check list_plugins
+
++----------+----------------------------------------------------------------------------------------------+
+| Property | Value                                                                                        |
++----------+----------------------------------------------------------------------------------------------+
+| name     | fuel_health                                                                                  |
+| suites   | fuel_health.tests.sanity.test_sanity_identity.SanityIdentityTest                             |
+|          | fuel_health.tests.sanity.test_sanity_compute.SanityComputeTest                               |
+|          | fuel_health.tests.sanity.test_sanity_heat.SanityHeatTest                                     |
+|          | fuel_health.tests.sanity.test_sanity_networking.NetworksTest:test_list_networks_nova_network |
+|          | fuel_health.tests.sanity.test_sanity_ceilometer.CeilometerApiTests                           |
+|          | fuel_health.tests.smoke.test_create_flavor.FlavorsAdminTest                                  |
+|          | fuel_health.tests.smoke.test_create_volume.VolumesTest                                       |
+|          | fuel_health.tests.smoke.test_neutron_actions.TestNeutron                                     |
+|          | fuel_health.tests.smoke.test_nova_create_instance_with_connectivity.TestNovaNetwork          |
+|          | fuel_health.tests.smoke.test_nova_image_actions.TestImageAction                              |
+|          | fuel_health.tests.smoke.test_user_create.TestUserTenantRole                                  |
++----------+----------------------------------------------------------------------------------------------+
+
+
+    cloudvalidation cloud-health-check list_plugin_suites --validation-plugin-name fuel_health
+
++----------+----------------------------------------------------------------------------------------------+
+| Property | Value                                                                                        |
++----------+----------------------------------------------------------------------------------------------+
+| suites   | fuel_health.tests.sanity.test_sanity_identity.SanityIdentityTest                             |
+|          | fuel_health.tests.sanity.test_sanity_compute.SanityComputeTest                               |
+|          | fuel_health.tests.sanity.test_sanity_heat.SanityHeatTest                                     |
+|          | fuel_health.tests.sanity.test_sanity_networking.NetworksTest:test_list_networks_nova_network |
+|          | fuel_health.tests.sanity.test_sanity_ceilometer.CeilometerApiTests                           |
+|          | fuel_health.tests.smoke.test_create_flavor.FlavorsAdminTest                                  |
+|          | fuel_health.tests.smoke.test_create_volume.VolumesTest                                       |
+|          | fuel_health.tests.smoke.test_neutron_actions.TestNeutron                                     |
+|          | fuel_health.tests.smoke.test_nova_create_instance_with_connectivity.TestNovaNetwork          |
+|          | fuel_health.tests.smoke.test_nova_image_actions.TestImageAction                              |
+|          | fuel_health.tests.smoke.test_user_create.TestUserTenantRole                                  |
++----------+----------------------------------------------------------------------------------------------+
+
+
+    cloudvalidation cloud-health-check list_plugin_tests --validation-plugin-name fuel_health
+
++----------+------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Property | Value                                                                                                                                                |
++----------+------------------------------------------------------------------------------------------------------------------------------------------------------+
+| tests    | fuel_health.tests.sanity.test_sanity_identity.SanityIdentityTest:test_list_services                                                                  |
+|          | fuel_health.tests.sanity.test_sanity_identity.SanityIdentityTest:test_list_users                                                                     |
+|          | fuel_health.tests.sanity.test_sanity_compute.SanityComputeTest:test_list_flavors                                                                     |
+|          | fuel_health.tests.sanity.test_sanity_compute.SanityComputeTest:test_list_images                                                                      |
+|          | fuel_health.tests.sanity.test_sanity_compute.SanityComputeTest:test_list_instances                                                                   |
+|          | fuel_health.tests.sanity.test_sanity_compute.SanityComputeTest:test_list_rate_limits                                                                 |
+|          | fuel_health.tests.sanity.test_sanity_compute.SanityComputeTest:test_list_snapshots                                                                   |
+|          | fuel_health.tests.sanity.test_sanity_compute.SanityComputeTest:test_list_volumes                                                                     |
+|          | fuel_health.tests.sanity.test_sanity_heat.SanityHeatTest:test_list_stacks                                                                            |
+|          | fuel_health.tests.sanity.test_sanity_ceilometer.CeilometerApiTests:test_list_meters                                                                  |
+|          | fuel_health.tests.smoke.test_create_flavor.FlavorsAdminTest:test_create_flavor                                                                       |
+|          | fuel_health.tests.smoke.test_create_volume.VolumesTest:test_create_boot_volume                                                                       |
+|          | fuel_health.tests.smoke.test_create_volume.VolumesTest:test_volume_create                                                                            |
+|          | fuel_health.tests.smoke.test_neutron_actions.TestNeutron:test_check_neutron_objects_creation                                                         |
+|          | fuel_health.tests.smoke.test_nova_create_instance_with_connectivity.TestNovaNetwork:test_001_create_keypairs                                         |
+|          | fuel_health.tests.smoke.test_nova_create_instance_with_connectivity.TestNovaNetwork:test_002_create_security_groups                                  |
+|          | fuel_health.tests.smoke.test_nova_create_instance_with_connectivity.TestNovaNetwork:test_003_check_networks                                          |
+|          | fuel_health.tests.smoke.test_nova_create_instance_with_connectivity.TestNovaNetwork:test_004_create_servers                                          |
+|          | fuel_health.tests.smoke.test_nova_create_instance_with_connectivity.TestNovaNetwork:test_006_check_internet_connectivity_instance_without_floatingIP |
+|          | fuel_health.tests.smoke.test_nova_create_instance_with_connectivity.TestNovaNetwork:test_008_check_public_instance_connectivity_from_instance        |
+|          | fuel_health.tests.smoke.test_nova_image_actions.TestImageAction:test_snapshot                                                                        |
+|          | fuel_health.tests.smoke.test_user_create.TestUserTenantRole:test_create_user                                                                         |
++----------+------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+
+    cloudvalidation cloud-health-check run_suites --validation-plugin-name fuel_health
+
+Note this command will generate big report, so it might be useful to save it into a file.
+
+
+    cloudvalidation cloud-health-check run_suite --validation-plugin-name fuel_health --suite fuel_health.tests.sanity.test_sanity_identity.SanityIdentityTest
+
+Note this command will generate big report, so it might be useful to save it into a file.
+
+
+    cloudvalidation cloud-health-check run_test --validation-plugin-name fuel_health --test fuel_health.tests.sanity.test_sanity_identity.SanityIdentityTest:test_list_services
+
++-------------------------------------------------------------------------------------+----------+--------+------------------------------------------------------------------------+
+| Test                                                                                | Duration | Result | Report                                                                 |
++-------------------------------------------------------------------------------------+----------+--------+------------------------------------------------------------------------+
+| fuel_health.tests.sanity.test_sanity_identity.SanityIdentityTest:test_list_services | 1.184s   | Passed | Request active services list ... ok                                    |
+|                                                                                     |          |        |                                                                        |
+|                                                                                     |          |        | ---------------------------------------------------------------------- |
+|                                                                                     |          |        | Ran 1 test in 1.184s                                                   |
+|                                                                                     |          |        |                                                                        |
+|                                                                                     |          |        | OK                                                                     |
+|                                                                                     |          |        |                                                                        |
++-------------------------------------------------------------------------------------+----------+--------+------------------------------------------------------------------------+
+

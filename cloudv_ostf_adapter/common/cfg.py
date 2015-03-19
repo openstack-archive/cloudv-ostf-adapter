@@ -80,7 +80,7 @@ rest_opts = [
 rest_client_opts = [
     cfg.StrOpt("host", default=os.environ.get("MCLOUDV_HOST", "localhost")),
     cfg.IntOpt("port", default=os.environ.get("MCLOUDV_PORT", 8777)),
-    cfg.StrOpt("api_version", default="v1")
+    cfg.StrOpt("api_version", default=os.environ.get("MCLOUDV_API", "v1"))
 ]
 
 CONF = cfg.CONF
