@@ -16,6 +16,7 @@ import signal
 import sys
 
 import flask
+
 from flask.ext import restful
 from oslo_config import cfg
 
@@ -48,6 +49,12 @@ def main():
     try:
         signal.signal(signal.SIGCHLD, signal.SIG_IGN)
         signal.signal(signal.SIGHUP, signal.SIG_IGN)
-        app.run(host=host, port=port, debug=CONF.rest.debug)
+        app.run(host=host, port=port,
+                debug=CONF.rest.debug,
+                use_reloader=True,
+                processes=100)
     except KeyboardInterrupt:
         pass
+
+if __name__ == "__main__":
+    main()

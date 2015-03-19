@@ -11,11 +11,12 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
 import json
 
 import testtools
 
-from cloudv_ostf_adapter import server
+from cloudv_ostf_adapter.cmd import server
 from cloudv_ostf_adapter.tests.unittests.fakes.fake_plugin import health_plugin
 from cloudv_ostf_adapter import wsgi
 
@@ -157,6 +158,7 @@ class TestServer(testtools.TestCase):
         test = self.plugin.tests[0]
         rv = self.app.post(
             '/v1/plugins/fake/suites/tests/%s' % test).data
+        self.plugin.test.description['test'] = test
         check = {
             u'plugin': {u'name': self.plugin.name,
                         u'test': test,

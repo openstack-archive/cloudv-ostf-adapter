@@ -12,9 +12,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import os
 
 from oslo_config import cfg
-
 
 from cloudv_ostf_adapter import version
 
@@ -77,6 +77,11 @@ rest_opts = [
                help="Debug for REST API."),
 ]
 
+rest_client_opts = [
+    cfg.StrOpt("host", default=os.environ.get("MCLOUDV_HOST", "localhost")),
+    cfg.IntOpt("port", default=os.environ.get("MCLOUDV_PORT", 8777)),
+    cfg.StrOpt("api_version", default="v1")
+]
 
 CONF = cfg.CONF
 CONF.register_opts(common_opts)
@@ -92,6 +97,9 @@ CONF.register_opts(smoke_opts, smoke_group)
 CONF.register_opts(platform_opts, platform_group)
 CONF.register_opts(ha_opts, ha_group)
 CONF.register_opts(rest_opts, rest_group)
+
+#client opts
+CONF.register_opts(rest_client_opts)
 
 
 def parse_args(argv, default_config_files=None):

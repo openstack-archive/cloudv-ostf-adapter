@@ -132,6 +132,7 @@ class Tests(BaseTests):
                   message="Test %s not found." % test)
         reports = plugin.run_test(test)
         report = [r.description for r in reports]
+        report[0]['test'] = test
         return {"plugin": {"name": plugin.name,
                            "test": test,
                            "report": report}}

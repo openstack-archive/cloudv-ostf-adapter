@@ -23,6 +23,9 @@ Supported plugins::
 
 Usage
 -----
+
+Please note that if you're using Fuel OSTF plugin, you have to install it manually.
+
 .. code-block:: bash
 
   $ cloudvalidation cloud-health-check {argument} [argument_parameters]
@@ -169,3 +172,18 @@ List of supported operations
 
  - run test for plugin
    /v1/plugins/<plugin_name>/suites/tests/<test>
+
+=====================
+REST API Client usage
+=====================
+
+.. code-block:: python
+
+    from cloudv_ostf_adapter.cloudv_client import client
+
+    cloudvclient = client.Client(CONF.host, CONF.port, CONF.api_version)
+
+    plugins = cloudvclient.plugins.list()
+    plugin_one = plugins[0]['name']
+
+    suites = cloudvalidation.suites.list_suites(plugin_one)
