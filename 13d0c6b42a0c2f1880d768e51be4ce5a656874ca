@@ -1,0 +1,8 @@
+Verified+2: Jenkins
+Code-Review+2: Denis M. <dmakogon@mirantis.com>
+Workflow+1: Denis M. <dmakogon@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Thu, 19 Mar 2015 16:04:17 +0000
+Reviewed-on: https://review.openstack.org/165837
+Project: stackforge/cloudv-ostf-adapter
+Branch: refs/heads/master
