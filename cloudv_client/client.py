@@ -13,9 +13,9 @@
 #    under the License.
 from cloudv_ostf_adapter.common import cfg
 
-from cloudv_ostf_adapter.cloudv_client import plugins
-from cloudv_ostf_adapter.cloudv_client import suites
-from cloudv_ostf_adapter.cloudv_client import tests
+from cloudv_client import plugins
+from cloudv_client import suites
+from cloudv_client import tests
 
 CONF = cfg.CONF
 

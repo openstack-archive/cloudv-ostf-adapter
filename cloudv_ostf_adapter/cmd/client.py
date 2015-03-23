@@ -17,7 +17,7 @@ import sys
 from oslo_config import cfg
 
 from cloudv_ostf_adapter.common import cfg as config
-from cloudv_ostf_adapter.cloudv_client import client
+from cloudv_client import client
 from cloudv_ostf_adapter.common import utils
 from cloudv_ostf_adapter.cmd import _common as cmd
 
