@@ -17,7 +17,7 @@ import sys
 from oslo_config import cfg
 
 from cloudv_ostf_adapter.common import cfg as config
-from cloudv_ostf_adapter.cloudv_client import client
+from cloudv_client import client
 from cloudv_ostf_adapter.common import utils
 from cloudv_ostf_adapter.cmd import _common as cmd
 
@@ -35,6 +35,7 @@ class ClientV1Shell(object):
         """
         List plugins
         """
+
         resp = self._client.plugins.list(load_tests=False)
         for plugin in resp:
             suites = plugin['suites']
@@ -49,6 +50,7 @@ class ClientV1Shell(object):
         Required options:
           --validation-plugin
         """
+
         resp = self._client.suites.list_suites(validation_plugin_name)
         suites = resp['suites']
         resp['suites'] = "\n".join(suites)
@@ -62,6 +64,7 @@ class ClientV1Shell(object):
         Required options:
           --validation-plugin
         """
+
         resp = self._client.suites.list_tests_for_suites(
             validation_plugin_name)
         tests = resp['tests']
@@ -76,6 +79,7 @@ class ClientV1Shell(object):
         Required options:
           --validation-plugin
         """
+
         resp = self._client.suites.run_suites(validation_plugin_name)
         utils.print_list(resp,
                          ['test', 'duration', 'result', 'report'],
@@ -90,6 +94,7 @@ class ClientV1Shell(object):
           --validation-plugin
           --suite
         """
+
         resp = self._client.suites.run_suite_tests(
             suite, validation_plugin_name)
         suite_test_reports = resp['report']
@@ -106,6 +111,7 @@ class ClientV1Shell(object):
           --validation-plugin
           --test
         """
+
         resp = self._client.tests.run(test, validation_plugin_name)
         utils.print_list(resp,
                          ['test', 'duration', 'result', 'report'],
