@@ -147,6 +147,7 @@ Example of config
  server_host=127.0.0.1
  server_port=8777
  log_file=/var/log/ostf.log
+ jobs_dir=/var/log/ostf
  debug=False
 
 List of supported operations
@@ -171,7 +172,11 @@ List of supported operations
    POST /v1/plugins/<plugin_name>/suites/<suite>
 
  - run test for plugin
-   /v1/plugins/<plugin_name>/suites/tests/<test>
+   POST /v1/plugins/<plugin_name>/suites/tests/<test>
+
+ - get status with report for executed job
+   GET /v1/jobs/<job_id>
+
 
 =====================
 REST API Client usage

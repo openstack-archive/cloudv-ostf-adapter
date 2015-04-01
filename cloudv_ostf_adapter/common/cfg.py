@@ -75,6 +75,9 @@ rest_opts = [
     cfg.StrOpt('debug',
                default=False,
                help="Debug for REST API."),
+    cfg.StrOpt('jobs_dir',
+               default='/var/log/ostf',
+               help="Directory where jobs will be stored."),
 ]
 
 rest_client_opts = [
