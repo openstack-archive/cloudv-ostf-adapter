@@ -1,6 +1,6 @@
 #    Copyright 2015 Mirantis, Inc
 #
-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    Licensed under the Apache License, Version 3.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
 #    a copy of the License at
 #
@@ -14,6 +14,8 @@
 
 import json
 
+import mock
+from oslo_config import cfg
 import testtools
 
 from cloudv_ostf_adapter.cmd import server
@@ -21,14 +23,22 @@ from cloudv_ostf_adapter.tests.unittests.fakes.fake_plugin import health_plugin
 from cloudv_ostf_adapter import wsgi
 
 
+CONF = cfg.CONF
+
+
 class TestServer(testtools.TestCase):
 
     def setUp(self):
         self.plugin = health_plugin.FakeValidationPlugin()
+        CONF.rest.jobs_dir = '/var/log/tmp_ostf'
         server.app.config['TESTING'] = True
         self.app = server.app.test_client()
         self.actual_plugins = wsgi.validation_plugin.VALIDATION_PLUGINS
         wsgi.validation_plugin.VALIDATION_PLUGINS = [self.plugin.__class__]
+        p = mock.patch('cloudv_ostf_adapter.wsgi.BaseTests.run_tests')
+        self.addCleanup(p.stop)
+        m = p.start()
+        m.return_value = 'fake_job'
         super(TestServer, self).setUp()
 
     def tearDown(self):
@@ -124,7 +134,7 @@ class TestServer(testtools.TestCase):
             '/v1/plugins/fake/suites').data
         check = {
             u'plugin': {u'name': self.plugin.name,
-                        u'report': [self.plugin.test.description]}}
+                        u'job_id': u'fake_job'}}
         self.assertEqual(self._resp_to_dict(rv), check)
 
     def test_run_suites_plugin_not_found(self):
@@ -139,7 +149,7 @@ class TestServer(testtools.TestCase):
             '/v1/plugins/fake/suites/%s' % suite).data
         check = {
             u'suite': {u'name': suite,
-                       u'report': [self.plugin.test.description]}}
+                       u'job_id': u'fake_job'}}
         self.assertEqual(self._resp_to_dict(rv), check)
 
     def test_run_suite_plugin_not_found(self):
@@ -162,7 +172,7 @@ class TestServer(testtools.TestCase):
         check = {
             u'plugin': {u'name': self.plugin.name,
                         u'test': test,
-                        u'report': [self.plugin.test.description]}}
+                        u'job_id': u'fake_job'}}
         self.assertEqual(self._resp_to_dict(rv), check)
 
     def test_run_test_plugin_not_found(self):
