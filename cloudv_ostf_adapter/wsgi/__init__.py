@@ -12,6 +12,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import json
+import multiprocessing
+import os
+import uuid
+
 from flask.ext import restful
 from flask.ext.restful import abort
 from flask.ext.restful import reqparse
@@ -48,6 +53,34 @@ class BaseTests(restful.Resource):
                   message='Unknown suite %s.' % suite)
         return suite
 
+    def path_from_job_name(self, job_id):
+        return '/'.join((CONF.rest.jobs_dir, job_id))
+
+    def _start_job(self):
+        _uuid = uuid.uuid4()
+        name = '%s_started' % str(_uuid)
+        full_name = self.path_from_job_name(name)
+        open(full_name, 'w').close()
+        return (str(_uuid), name)
+
+    def run_tests(self, handler, arg=None):
+        job_id, name = self._start_job()
+        p = multiprocessing.Process(target=self._run_tests,
+                                    args=(name, handler, arg))
+        p.start()
+        return job_id
+
+    def _run_tests(self, name, handler, arg=None):
+        if arg is not None:
+            res = handler(arg)
+        else:
+            res = handler()
+        with open(self.path_from_job_name(name), 'w') as f:
+            report = [r.description for r in res]
+            f.write(json.dumps(report))
+        os.rename(self.path_from_job_name(name),
+                  self.path_from_job_name(name[:-8]))
+
 
 class Plugins(BaseTests):
 
@@ -83,10 +116,9 @@ class PluginSuite(BaseTests):
     def post(self, **kwargs):
         plugin = self.get_plugin(**kwargs)
         self.load_tests()
-        reports = plugin.run_suites()
-        report = [r.description for r in reports]
+        job_id = self.run_tests(plugin.run_suites)
         return {"plugin": {"name": plugin.name,
-                           "report": report}}
+                           "job_id": job_id}}
 
 
 class PluginTests(BaseTests):
@@ -115,10 +147,10 @@ class Suites(BaseTests):
         _suite = kwargs.pop('suite', None)
         suite = self.get_suite(plugin, suite=_suite)
         self.load_tests()
-        reports = plugin.run_suite(suite)
-        report = [r.description for r in reports]
+
+        job_id = self.run_tests(plugin.run_suite, arg=suite)
         return {"suite": {"name": suite,
-                          "report": report}}
+                          "job_id": job_id}}
 
 
 class Tests(BaseTests):
@@ -130,9 +162,31 @@ class Tests(BaseTests):
         if test is None or test not in plugin.tests:
             abort(404,
                   message="Test %s not found." % test)
-        reports = plugin.run_test(test)
-        report = [r.description for r in reports]
-        report[0]['test'] = test
+        job_id = self.run_tests(plugin.run_test, arg=test)
         return {"plugin": {"name": plugin.name,
                            "test": test,
-                           "report": report}}
+                           "job_id": job_id}}
+
+
+class Job(BaseTests):
+
+    def get(self, **kwargs):
+        all_jobs = [f for (dp, dn, f) in os.walk(CONF.rest.jobs_dir)][0]
+        job_name = kwargs.pop('job_id', None)
+        if job_name is None:
+            abort(404,
+                  message="Job was not specified.")
+        names = [job_name, job_name + '_started']
+        filtered = set(names) & set(all_jobs)
+        if not filtered:
+            abort(404,
+                  message="Job %s not found." % job_name)
+        actual_name = filtered.pop()
+        if 'started' in actual_name:
+            report = 'running'
+        else:
+            file_name = self.path_from_job_name(actual_name)
+            with open(file_name, 'r') as f:
+                report = f.read()
+        return {"jobs": {"id": job_name,
+                         "report": report}}

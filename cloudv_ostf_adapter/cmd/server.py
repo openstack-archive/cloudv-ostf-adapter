@@ -12,6 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import os
 import signal
 import sys
 
@@ -41,9 +42,15 @@ api.add_resource(wsgi.Suites,
 api.add_resource(wsgi.Tests,
                  '/v1/plugins/<plugin>/suites/tests/<test>')
 
+api.add_resource(wsgi.Job,
+                 '/v1/jobs/<job_id>')
+
 
 def main():
     config.parse_args(sys.argv)
+    jobs_dir = CONF.rest.jobs_dir
+    if not os.path.exists(jobs_dir):
+        os.mkdir(jobs_dir)
 
     host, port = CONF.rest.server_host, CONF.rest.server_port
     try:
