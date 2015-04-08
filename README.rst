@@ -147,6 +147,7 @@ Example of config
  server_host=127.0.0.1
  server_port=8777
  log_file=/var/log/ostf.log
+ jobs_dir=/var/log/ostf
  debug=False
 
 List of supported operations
@@ -171,7 +172,36 @@ List of supported operations
    POST /v1/plugins/<plugin_name>/suites/<suite>
 
  - run test for plugin
-   /v1/plugins/<plugin_name>/suites/tests/<test>
+   POST /v1/plugins/<plugin_name>/suites/tests/<test>
+
+ - create job with user's tests set
+   POST /v1/jobs/create
+   Example of JSON:
+
+
+.. code-block:: bash
+
+    {
+      "job": {
+        "name": "fake",
+        "description": "description",
+        "tests": [
+              "fuel_health.tests.sanity.test_sanity_compute.SanityComputeTest:test_list_flavors"] 
+       }
+    }
+
+- list of all jobs
+  GET /v1/jobs
+
+- execute job
+  GET /v1/jobs/execute/<job_id>
+
+- get status with report for executed job
+  GET /v1/jobs/<job_id>
+
+- delete job
+  DELETE /v1/jobs/<job_id>
+
 
 =====================
 REST API Client usage
