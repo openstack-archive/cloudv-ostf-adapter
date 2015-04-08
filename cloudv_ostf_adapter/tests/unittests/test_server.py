@@ -13,7 +13,12 @@
 #    under the License.
 
 import json
+import os
+import shutil
+import uuid
 
+import mock
+from oslo_config import cfg
 import testtools
 
 from cloudv_ostf_adapter.cmd import server
@@ -21,18 +26,46 @@ from cloudv_ostf_adapter.tests.unittests.fakes.fake_plugin import health_plugin
 from cloudv_ostf_adapter import wsgi
 
 
+CONF = cfg.CONF
+
+
 class TestServer(testtools.TestCase):
 
     def setUp(self):
+        self.jobs_dir = '/tmp/ostf_tests_%s' % uuid.uuid1()
+        CONF.rest.jobs_dir = self.jobs_dir
+        if not os.path.exists(self.jobs_dir):
+            os.mkdir(self.jobs_dir)
         self.plugin = health_plugin.FakeValidationPlugin()
         server.app.config['TESTING'] = True
         self.app = server.app.test_client()
         self.actual_plugins = wsgi.validation_plugin.VALIDATION_PLUGINS
         wsgi.validation_plugin.VALIDATION_PLUGINS = [self.plugin.__class__]
+
+        data = {'job': {'name': 'fake',
+                        'tests': self.plugin.tests,
+                        'description': 'description'}}
+        rv = self.app.post(
+            '/v1/jobs/create', content_type='application/json',
+            data=json.dumps(data)).data
+        self.job_id = self._resp_to_dict(rv)['job']['id']
+        rv2 = self.app.post(
+            '/v1/jobs/create', content_type='application/json',
+            data=json.dumps(data)).data
+        self.job_id2 = self._resp_to_dict(rv2)['job']['id']
+
+        p = mock.patch('cloudv_ostf_adapter.wsgi.uuid.uuid4')
+        self.addCleanup(p.stop)
+        m = p.start()
+        m.return_value = 'fake_uuid'
+        execute = mock.patch('cloudv_ostf_adapter.wsgi.Execute._execute_job')
+        self.addCleanup(execute.stop)
+        execute.start()
         super(TestServer, self).setUp()
 
     def tearDown(self):
         wsgi.validation_plugin.VALIDATION_PLUGINS = self.actual_plugins
+        shutil.rmtree(self.jobs_dir)
         super(TestServer, self).tearDown()
 
     def test_urlmap(self):
@@ -43,7 +76,12 @@ class TestServer(testtools.TestCase):
             '/v1/plugins/<plugin>/suites/<suite>/tests',
             '/v1/plugins/<plugin>/suites/tests',
             '/v1/plugins/<plugin>/suites/<suite>',
-            '/v1/plugins/<plugin>/suites'
+            '/v1/plugins/<plugin>/suites',
+            '/v1/plugins/<plugin>/suites/tests/<test>',
+            '/v1/jobs/create',
+            '/v1/jobs',
+            '/v1/jobs/execute/<job_id>',
+            '/v1/jobs/<job_id>'
         ]
         for rule in server.app.url_map.iter_rules():
             links.append(str(rule))
@@ -176,3 +214,112 @@ class TestServer(testtools.TestCase):
             '/v1/plugins/fake/suites/tests/fake_test').data
         check = {u'message': u'Test fake_test not found.'}
         self.assertEqual(self._resp_to_dict(rv), check)
+
+    def test_job_create_json_not_found(self):
+        rv = self.app.post(
+            '/v1/jobs/create').data
+        check = {u'message': u'JSON is missing.'}
+        self.assertEqual(self._resp_to_dict(rv), check)
+
+    def test_job_create_job_key_found(self):
+        data = {'fake': {}}
+        rv = self.app.post(
+            '/v1/jobs/create', content_type='application/json',
+            data=json.dumps(data)).data
+        check = {u'message': u"JSON doesn't have `job` key."}
+        self.assertEqual(self._resp_to_dict(rv), check)
+
+    def test_job_create_fields_not_found(self):
+        data = {'job': {'name': 'fake'}}
+        rv = self.app.post(
+            '/v1/jobs/create', content_type='application/json',
+            data=json.dumps(data)).data
+        check = {u'message': u'Fields description,tests are not specified.'}
+        self.assertEqual(self._resp_to_dict(rv), check)
+
+    def test_job_create_tests_not_found(self):
+        data = {'job': {'name': 'fake',
+                        'tests': ['a', 'b'],
+                        'description': 'description'}}
+        rv = self.app.post(
+            '/v1/jobs/create', content_type='application/json',
+            data=json.dumps(data)).data
+        check = {u'message': u'Tests not found (a,b).'}
+        self.assertEqual(self._resp_to_dict(rv), check)
+
+    def test_job_create(self):
+        data = {'job': {'name': 'fake',
+                        'tests': self.plugin.tests,
+                        'description': 'description'}}
+        rv = self.app.post(
+            '/v1/jobs/create', content_type='application/json',
+            data=json.dumps(data)).data
+        check = {u'job': {u'description': u'description',
+                 u'id': u'fake_uuid',
+                 u'name': u'fake',
+                 u'status': u'CREATED',
+                 u'tests': self.plugin.tests}}
+        self.assertEqual(self._resp_to_dict(rv), check)
+
+    def test_execute_job_not_found(self):
+        rv = self.app.post('/v1/jobs/execute/fake').data
+        check = {u'message': u'Job not found.'}
+        self.assertEqual(self._resp_to_dict(rv), check)
+
+    def test_execute_job(self):
+        rv = self.app.post('/v1/jobs/execute/%s' % self.job_id).data
+        check = {u'job': {u'description': u'description',
+                          u'id': self.job_id,
+                          u'name': u'fake',
+                          u'report': [],
+                          u'status': u'IN PROGRESS',
+                          u'tests': self.plugin.tests}}
+        self.assertEqual(self._resp_to_dict(rv), check)
+
+    def test_get_list_jobs(self):
+        rv = self.app.get('/v1/jobs').data
+        resp_dict = self._resp_to_dict(rv)['jobs']
+        resp_dict.sort()
+        check = [
+            {u'description': u'description',
+             u'id': self.job_id,
+             u'name': u'fake',
+             u'status': u'CREATED',
+             u'tests': self.plugin.tests},
+            {u'description': u'description',
+             u'id': self.job_id2,
+             u'name': u'fake',
+             u'status': u'CREATED',
+             u'tests': self.plugin.tests}]
+        check.sort()
+        self.assertEqual(resp_dict, check)
+
+    def test_get_job_not_found(self):
+        rv = self.app.get('/v1/jobs/fake').data
+        check = {u'message': u'Job not found.'}
+        self.assertEqual(self._resp_to_dict(rv), check)
+
+    def test_get_job(self):
+        rv = self.app.get('/v1/jobs/%s' % self.job_id).data
+        check = {'job': {u'description': u'description',
+                         u'id': self.job_id,
+                         u'name': u'fake',
+                         u'status': u'CREATED',
+                         u'tests': self.plugin.tests}}
+        self.assertEqual(self._resp_to_dict(rv), check)
+
+    def test_delete_job_not_found(self):
+        rv = self.app.delete('/v1/jobs/fake').data
+        check = {u'message': u'Job not found.'}
+        self.assertEqual(self._resp_to_dict(rv), check)
+
+    def test_delete_job(self):
+        before = self._resp_to_dict(
+            self.app.get('/v1/jobs').data)
+        jobs_id_before = [j['id'] for j in before['jobs']]
+        self.assertEqual(len(jobs_id_before), 2)
+        self.app.delete('/v1/jobs/%s' % self.job_id)
+        after = self._resp_to_dict(
+            self.app.get('/v1/jobs').data)
+        jobs_id_after = [j['id'] for j in after['jobs']]
+        self.assertEqual(len(jobs_id_after), 1)

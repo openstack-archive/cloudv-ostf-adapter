@@ -12,15 +12,25 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import json
+import multiprocessing
+import os
+import os.path
+import uuid
+
 from flask.ext import restful
 from flask.ext.restful import abort
 from flask.ext.restful import reqparse
+from flask import request
 from oslo_config import cfg
 
 from cloudv_ostf_adapter import validation_plugin
 
 
 CONF = cfg.CONF
+CREATED = 'CREATED'
+IN_PROGRESS = 'IN PROGRESS'
+COMPLETED = 'COMPLETED'
 
 
 class BaseTests(restful.Resource):
@@ -47,6 +57,20 @@ class BaseTests(restful.Resource):
             abort(404,
                   message='Unknown suite %s.' % suite)
         return suite
+
+    def path_from_job_name(self, job_id):
+        return '/'.join((CONF.rest.jobs_dir, job_id))
+
+    def get_job(self, **kwargs):
+        job_id = kwargs.pop('job_id', None)
+        if job_id is None:
+            abort(400,
+                  message="Job id is missing.")
+        file_name = self.path_from_job_name(job_id)
+        if not os.path.exists(file_name):
+            abort(404,
+                  message="Job not found.")
+        return (job_id, file_name)
 
 
 class Plugins(BaseTests):
@@ -136,3 +160,114 @@ class Tests(BaseTests):
         return {"plugin": {"name": plugin.name,
                            "test": test,
                            "report": report}}
+
+
+class JobsCreation(BaseTests):
+
+    def post(self, **kwargs):
+        try:
+            data = request.json
+        except Exception:
+            abort(400,
+                  message="JSON is missing.")
+        if data is None:
+            abort(400,
+                  message="JSON is missing.")
+        job = data.get('job', None)
+        if job is None:
+            abort(400,
+                  message="JSON doesn't have `job` key.")
+        mandatory = ['name',
+                     'tests',
+                     'description']
+        missing = set(mandatory) - set(job.keys())
+        missing = list(missing)
+        missing.sort()
+        if missing:
+            abort(400,
+                  message="Fields %s are not specified." % ','.join(missing))
+        self.load_tests()
+        filtered_tests = []
+        for p in self.plugins.values():
+            tests_in_plugin = set(p.tests) & set(job['tests'])
+            filtered_tests.extend(tests_in_plugin)
+        not_found = set(job['tests']) - set(filtered_tests)
+        not_found = list(not_found)
+        not_found.sort()
+        if not_found:
+            abort(400,
+                  message="Tests not found (%s)." % ','.join(not_found))
+        job_uuid = str(uuid.uuid4())
+        file_name = self.path_from_job_name(job_uuid)
+        job['status'] = CREATED
+        with open(file_name, 'w') as f:
+            f.write(json.dumps(job))
+        job['id'] = job_uuid
+        return {'job': job}
+
+
+class Execute(BaseTests):
+
+    def post(self, **kwargs):
+        job_id, file_name = self.get_job(**kwargs)
+        data = {}
+        with open(file_name, 'r') as f:
+            data = json.loads(f.read())
+        with open(file_name, 'w') as f:
+            data['status'] = IN_PROGRESS
+            data['report'] = []
+            f.write(json.dumps(data))
+        p = multiprocessing.Process(target=self._execute_job,
+                                    args=(data, job_id))
+        p.start()
+        job = data.copy()
+        job['id'] = job_id
+        return {'job': job}
+
+    def _execute_job(self, data, job_id):
+        tests = data['tests']
+        self.load_tests()
+        reports = []
+        for name, plugin in self.plugins.iteritems():
+            tests_in_plugin = set(plugin.tests) & set(tests)
+            for test in tests_in_plugin:
+                results = plugin.run_test(test)
+                report = [r.description for r in results].pop()
+                report['test'] = test
+                reports.append(report)
+        data['status'] = COMPLETED
+        data['report'] = reports
+        file_name = self.path_from_job_name(job_id)
+        with open(file_name, 'w') as f:
+            f.write(json.dumps(data))
+
+
+class Job(BaseTests):
+
+    def get(self, **kwargs):
+        job_id, file_name = self.get_job(**kwargs)
+        data = {}
+        with open(file_name, 'r') as f:
+            data = json.loads(f.read())
+        job = data.copy()
+        job['id'] = job_id
+        return {'job': job}
+
+    def delete(self, **kwargs):
+        job_id, file_name = self.get_job(**kwargs)
+        os.remove(file_name)
+        return {}
+
+
+class Jobs(BaseTests):
+
+    def get(self):
+        res = []
+        jobs = [f for (dp, dn, f) in os.walk(CONF.rest.jobs_dir)][0]
+        for job in jobs:
+            file_name = self.path_from_job_name(job)
+            with open(file_name, 'r') as f:
+                data = json.loads(f.read())
+            data['id'] = job
+            res.append(data)
+        return {'jobs': res}
