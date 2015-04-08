@@ -13,6 +13,7 @@
 #    under the License.
 from cloudv_ostf_adapter.common import cfg
 
+from cloudv_client import jobs
 from cloudv_client import plugins
 from cloudv_client import suites
 from cloudv_client import tests
@@ -31,3 +32,4 @@ class Client(object):
         self.plugins = plugins.Plugins(**kwargs)
         self.suites = suites.Suites(**kwargs)
         self.tests = tests.Tests(**kwargs)
+        self.jobs = jobs.Jobs(**kwargs)
