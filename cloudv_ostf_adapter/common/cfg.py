@@ -26,6 +26,11 @@ common_opts = [
     cfg.StrOpt("nose_verbosity", default="-v")
 ]
 
+cli_opts = [
+    cfg.BoolOpt('no-format', short='F', default=False, required=False),
+    cfg.BoolOpt('verbose', short='V', default=False, required=False)
+]
+
 sanity_group = cfg.OptGroup("sanity", "Sanity configuration group.")
 smoke_group = cfg.OptGroup("smoke", "Smoke configuration group.")
 platform_group = cfg.OptGroup("platform",
@@ -103,6 +108,9 @@ CONF.register_opts(rest_opts, rest_group)
 
 #client opts
 CONF.register_opts(rest_client_opts)
+
+# CLI opts
+CONF.register_cli_opts(cli_opts)
 
 
 def parse_args(argv, default_config_files=None):

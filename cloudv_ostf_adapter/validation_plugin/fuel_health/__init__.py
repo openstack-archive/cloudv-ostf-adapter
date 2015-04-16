@@ -24,7 +24,6 @@ from nose import core
 from oslo_utils import importutils
 
 from cloudv_ostf_adapter.common import cfg
-from cloudv_ostf_adapter.common import utils
 from cloudv_ostf_adapter.common import object_descriptors
 from cloudv_ostf_adapter.validation_plugin import base
 from cloudv_ostf_adapter.validation_plugin.fuel_health import sanity
@@ -141,14 +140,10 @@ class FuelHealthPlugin(base.ValidationPlugin):
         return reports
 
     def run_suites_within_cli(self):
-        reports = self.run_suites()
-        for report in reports:
-            utils.print_dict(report.description)
+        return self.run_suites()
 
     def run_suite_within_cli(self, suite):
-        reports = self.run_suite(suite)
-        for report in reports:
-            utils.print_dict(report.description)
+        return self.run_suite(suite)
 
     def run_test(self, test):
         safe_stderr = sys.stderr
@@ -162,6 +157,4 @@ class FuelHealthPlugin(base.ValidationPlugin):
         return reports
 
     def run_test_within_cli(self, test):
-        reports = self.run_test(test)
-        for report in reports:
-            utils.print_dict(report.description)
+        return self.run_test(test)

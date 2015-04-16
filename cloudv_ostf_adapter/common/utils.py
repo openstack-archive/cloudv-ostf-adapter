@@ -30,11 +30,37 @@ def _print(pt, order):
         print(encodeutils.safe_encode(pt.get_string(sortby=order)))
 
 
-def print_dict(d, property="Property"):
+def print_raw(d, verbose):
+
+    fn_filter = (lambda key: 0) if verbose else lambda key: key == 'report'
+
+    for row in six.iteritems(d):
+        if fn_filter(row[0]):
+            continue
+
+        print('[%s]:\t%s' % (row[0].upper(), row[1]))
+    print('')
+
+
+def print_dict(d, verbose, property="Property"):
     pt = prettytable.PrettyTable([property, 'Value'], caching=False)
     pt.align = 'l'
-    [pt.add_row(list(r)) for r in six.iteritems(d)]
+
+    fn_filter = (lambda key: 0) if verbose else lambda key: key == 'report'
+
+    [pt.add_row(list(r)) for r in six.iteritems(d) if not fn_filter(r[0])]
     _print(pt, property)
+
+
+def print_formatted(reports, raw_format, verbose):
+
+    if raw_format:
+        fn_print = print_raw
+    else:
+        fn_print = print_dict
+
+    for report in reports:
+        fn_print(report.description, verbose=verbose)
 
 
 def print_list(objs, fields, formatters={}, order_by=None, obj_is_dict=False,
