@@ -17,7 +17,7 @@ from oslo_utils import importutils
 
 class Test(object):
     """
-    This class represents seginificant information about test case
+    This class represents siginificant information about test case
     such as:
         test
         its execution report
@@ -41,6 +41,9 @@ class Test(object):
         @type test_class: basestring
         """
         self._test_class = test_class
+
+        self._test_caption = test_class
+
         self._duration = None
         self._report = None
         self._result = None
@@ -60,7 +63,7 @@ class Test(object):
         :rtype: dict
         """
         return {
-            'test': self._test_class,
+            'test': self._test_caption,
             'report': self.report,
             'result': self.result,
             'duration': self.duration,
@@ -82,7 +85,11 @@ class Test(object):
         """
         Returns nose test name
         """
-        return self._test_class
+        return self._test_caption
+
+    @name.setter
+    def name(self, name):
+        self._test_caption = name
 
     @property
     def report(self):
