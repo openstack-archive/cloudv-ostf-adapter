@@ -33,30 +33,40 @@ class OSTF(object):
     - list per-plugin test suites
     """
 
+    @cmd.args("--verbose", dest="verbose")
+    @cmd.args("--no-format", dest="no_format")
     def list_plugins(self):
         for plugin in validation_plugin.VALIDATION_PLUGINS:
             _plugin = plugin(load_tests=False)
             descriptor = _plugin.descriptor()
             del descriptor['tests']
             descriptor.update({'suites': "\n".join(descriptor['suites'])})
-            utils.print_dict(descriptor)
+            utils.print_formatted(descriptor, CONF.no_format, CONF.verbose)
 
+    @cmd.args("--verbose", dest="verbose")
+    @cmd.args("--no-format", dest="no_format")
     @cmd.args("--validation-plugin-name", dest="validation_plugin_name")
     def list_plugin_suites(self, validation_plugin_name):
         for plugin in validation_plugin.VALIDATION_PLUGINS:
             _plugin = plugin(load_tests=False)
-            descriptor = _plugin.descriptor()
-            if descriptor['name'] == validation_plugin_name:
-                utils.print_dict({'suites': "\n".join(descriptor['suites'])})
+            descr = _plugin.descriptor()
+            if descr['name'] == validation_plugin_name:
+                utils.print_formatted({'suites': "\n".join(descr['suites'])},
+                                      CONF.no_format,
+                                      CONF.verbose)
 
+    @cmd.args("--verbose", dest="verbose")
+    @cmd.args("--no-format", dest="no_format")
     @cmd.args("--validation-plugin-name", dest="validation_plugin_name")
     def list_plugin_tests(self, validation_plugin_name):
         for plugin in validation_plugin.VALIDATION_PLUGINS:
             _plugin = plugin(load_tests=False)
-            descriptor = _plugin.descriptor()
-            if descriptor['name'] == validation_plugin_name:
-                utils.print_dict({
-                    'tests': "\n".join(plugin().descriptor()['tests'])})
+            descr = _plugin.descriptor()
+            if descr['name'] == validation_plugin_name:
+                test_str = (plugin().descr()['tests'])
+                utils.print_formatted({'tests': "\n%s" % test_str},
+                                      CONF.no_format,
+                                      CONF.verbose)
 
     @cmd.args("--no-format", dest="no_format")
     @cmd.args("--verbose", dest="verbose")
