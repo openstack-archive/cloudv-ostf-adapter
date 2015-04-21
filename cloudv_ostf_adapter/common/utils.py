@@ -42,7 +42,7 @@ def print_raw(d, verbose):
     print('')
 
 
-def print_dict(d, verbose, property="Property"):
+def print_dict(d, verbose=False, property="Property"):
     pt = prettytable.PrettyTable([property, 'Value'], caching=False)
     pt.align = 'l'
 
