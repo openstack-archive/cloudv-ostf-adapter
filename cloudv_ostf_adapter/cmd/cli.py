@@ -59,7 +59,7 @@ class OSTF(object):
                     'tests': "\n".join(plugin().descriptor()['tests'])})
 
     @cmd.args("--no-format", dest="no_format")
-    @cmd.args("--verbose", dest="verbose")
+    @cmd.args("--show-full-report", dest="show_full_report")
     @cmd.args("--validation-plugin-name", dest="validation_plugin_name")
     def run_suites(self, validation_plugin_name):
         for plugin in validation_plugin.VALIDATION_PLUGINS:
@@ -67,22 +67,26 @@ class OSTF(object):
             descriptor = _plugin.descriptor()
             if descriptor['name'] == validation_plugin_name:
                 reports = plugin().run_suites_within_cli()
-                utils.print_formatted(reports, CONF.no_format, CONF.verbose)
+                utils.print_formatted(reports,
+                                      CONF.no_format,
+                                      CONF.show_full_report)
 
     @cmd.args("--suite", dest="suite")
     @cmd.args("--validation-plugin-name", dest="validation_plugin_name")
     @cmd.args("--no-format", dest="no_format")
-    @cmd.args("--verbose", dest="verbose")
+    @cmd.args("--show-full-report", dest="show_full_report")
     def run_suite(self, validation_plugin_name, suite):
         for plugin in validation_plugin.VALIDATION_PLUGINS:
             _plugin = plugin(load_tests=False)
             descriptor = _plugin.descriptor()
             if descriptor['name'] == validation_plugin_name:
                 reports = plugin().run_suite_within_cli(suite)
-                utils.print_formatted(reports, CONF.no_format, CONF.verbose)
+                utils.print_formatted(reports,
+                                      CONF.no_format,
+                                      CONF.show_full_report)
 
     @cmd.args("--no-format", dest="no_format")
-    @cmd.args("--verbose", dest="verbose")
+    @cmd.args("--show-full-report", dest="show_full_report")
     @cmd.args("--validation-plugin-name", dest="validation_plugin_name")
     @cmd.args("--test", dest="test")
     def run_test(self, validation_plugin_name, test):
@@ -91,7 +95,9 @@ class OSTF(object):
             descriptor = _plugin.descriptor()
             if descriptor['name'] == validation_plugin_name:
                 reports = plugin().run_test(test)
-                utils.print_formatted(reports, CONF.no_format, CONF.verbose)
+                utils.print_formatted(reports,
+                                      CONF.no_format,
+                                      CONF.show_full_report)
 
 
 CATS = {
