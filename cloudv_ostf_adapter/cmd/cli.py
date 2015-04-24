@@ -59,7 +59,7 @@ class OSTF(object):
                     'tests': "\n".join(plugin().descriptor()['tests'])})
 
     @cmd.args("--no-format", dest="no_format")
-    @cmd.args("--verbose", dest="verbose")
+    @cmd.args("--verbosity", dest="verbose")
     @cmd.args("--validation-plugin-name", dest="validation_plugin_name")
     def run_suites(self, validation_plugin_name):
         for plugin in validation_plugin.VALIDATION_PLUGINS:
@@ -72,7 +72,7 @@ class OSTF(object):
     @cmd.args("--suite", dest="suite")
     @cmd.args("--validation-plugin-name", dest="validation_plugin_name")
     @cmd.args("--no-format", dest="no_format")
-    @cmd.args("--verbose", dest="verbose")
+    @cmd.args("--verbosity", dest="verbose")
     def run_suite(self, validation_plugin_name, suite):
         for plugin in validation_plugin.VALIDATION_PLUGINS:
             _plugin = plugin(load_tests=False)
@@ -82,7 +82,7 @@ class OSTF(object):
                 utils.print_formatted(reports, CONF.no_format, CONF.verbose)
 
     @cmd.args("--no-format", dest="no_format")
-    @cmd.args("--verbose", dest="verbose")
+    @cmd.args("--verbosity", dest="verbose")
     @cmd.args("--validation-plugin-name", dest="validation_plugin_name")
     @cmd.args("--test", dest="test")
     def run_test(self, validation_plugin_name, test):
