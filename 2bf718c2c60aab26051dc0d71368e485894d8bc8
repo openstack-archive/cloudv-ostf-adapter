@@ -1,0 +1,8 @@
+Verified+2: Jenkins
+Code-Review+2: Oleksandr Kyrylchuk <okyrylchuk@mirantis.com>
+Workflow+1: Oleksandr Kyrylchuk <okyrylchuk@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Tue, 12 May 2015 13:13:34 +0000
+Reviewed-on: https://review.openstack.org/182278
+Project: stackforge/cloudv-ostf-adapter
+Branch: refs/heads/master
