@@ -89,6 +89,14 @@ class FuelHealthPlugin(base.ValidationPlugin):
             if line.startswith("Ran"):
                 return line.split(" ")[-1]
 
+    def _get_test_name_from_report(self, report):
+        if len(report) and not report[0].startswith('ERROR'):
+            return report[0]
+        return ''
+
+    def _get_test_name_from_class(self, cls_name):
+        return cls_name.split(':')[1]
+
     def _execute_and_report(self, test_suite_paths):
         """
         Executes and assembles report right after each test execution
@@ -106,6 +114,16 @@ class FuelHealthPlugin(base.ValidationPlugin):
 
             test_descr = object_descriptors.Test(test)
             test_descr.report = "".join(suites_report.buflist)
+
+            # @TODO(okyrylchuk): there's no way to extract test
+            # description from report when test fails, so it should
+            # be implemented in a rather different way
+
+            _name = self._get_test_name_from_report(suites_report.buflist)
+            _name = _name or self._get_test_name_from_class(test_descr.name)
+
+            test_descr.name = _name
+
             test_descr.duration = self._get_duration_from_report(
                 suites_report.buflist)
             test_descr.result = "Passed" if result else "Failed"
