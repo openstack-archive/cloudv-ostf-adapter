@@ -196,7 +196,6 @@ class TestServer(testtools.TestCase):
         test = self.plugin.tests[0]
         rv = self.app.post(
             '/v1/plugins/fake/suites/tests/%s' % test).data
-        self.plugin.test.description['test'] = test
         check = {
             u'plugin': {u'name': self.plugin.name,
                         u'test': test,
