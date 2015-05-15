@@ -155,7 +155,14 @@ class Tests(BaseTests):
             abort(404,
                   message="Test %s not found." % test)
         reports = plugin.run_test(test)
+        with open(CONF.rest.log_file, 'a+') as f:
+            for report in reports:
+                for descr in report.description:
+                    f.write("%s: %s\n" % (descr, report.description[descr]))
+            f.write('\n' * 5)
+
         report = [r.description for r in reports]
+
         return {"plugin": {"name": plugin.name,
                            "test": test,
                            "report": report}}
