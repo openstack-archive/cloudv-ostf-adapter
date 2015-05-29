@@ -27,8 +27,10 @@ common_opts = [
 ]
 
 cli_opts = [
-    cfg.BoolOpt('no-format', short='F', default=False, required=False),
-    cfg.BoolOpt('show-full-report', short='R', default=False, required=False)
+    cfg.BoolOpt('no-format', short='F', default=False, required=False,
+                help='Do not format the output as table'),
+    cfg.BoolOpt('show-full-report', short='R', default=False, required=False,
+                help='Show full report about a test (including traceback)')
 ]
 
 sanity_group = cfg.OptGroup("sanity", "Sanity configuration group.")
