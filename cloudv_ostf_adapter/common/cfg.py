@@ -27,8 +27,8 @@ common_opts = [
 ]
 
 cli_opts = [
-    cfg.BoolOpt('no-format', short='F', default=False, required=False),
-    cfg.BoolOpt('show-full-report', short='R', default=False, required=False)
+    cfg.BoolOpt('no-format', short='F', default=False, required=True),
+    cfg.BoolOpt('show-full-report', short='R', default=False, required=True)
 ]
 
 sanity_group = cfg.OptGroup("sanity", "Sanity configuration group.")
