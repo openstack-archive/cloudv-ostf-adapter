@@ -2,6 +2,10 @@
 Cloud Validation adapter for OSTF
 =================================
 
+** WARNING
+** This repository is deprecated. All sources are available at
+gerrit.mirantis.com
+
 Overview
 --------
 
